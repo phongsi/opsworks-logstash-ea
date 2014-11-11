@@ -8,5 +8,5 @@ version          "0.4.1"
 
 supports "ubuntu"
 
-depends "build-essential", "~> 2.0"
-depends "apt", "~> 2.5"
+depends "build-essential"
+depends "apt"
