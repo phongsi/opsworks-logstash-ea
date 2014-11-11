@@ -2,6 +2,15 @@
 
 This file is used to list changes made in each version of kibana.
 
+## 1.3.0:
+* big rewrite to act as library cookbook.
+* not sure if it will be backwards compat yet.
+
+## 1.2.1:
+* proxy backend healthcheck
+* update proxy templates to match kibana master
+* changed config.js template to pull from attributes
+
 ## 1.2.0:
 
 * Add ability to choose install type of either git repo or zipfile

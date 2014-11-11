@@ -17,76 +17,74 @@
 # limitations under the License.
 #
 
-include_recipe "git"
+if node['kibana']['legacy_mode']
+  # Temporarily here to allow to use the old way.
+  include_recipe 'git'
 
-unless Chef::Config[:solo]
-  es_server_results = search(:node, "roles:#{node['kibana']['es_role']} AND chef_environment:#{node.chef_environment}")
-  unless es_server_results.empty?
-    node.set['kibana']['es_server'] = es_server_results[0]['ipaddress']
+  unless Chef::Config[:solo]
+    es_server_results = search(:node, "roles:#{node['kibana']['es_role']} AND chef_environment:#{node.chef_environment}")
+    unless es_server_results.empty?
+      node.set['kibana']['es_server'] = es_server_results[0]['ipaddress']
+    end
   end
-end
 
-if node['kibana']['user'].empty?
-  unless node['kibana']['webserver'].empty?
-    webserver = node['kibana']['webserver']
-    kibana_user = node[webserver]['user']
+  if node['kibana']['user'].empty?
+    if !node['kibana']['webserver'].empty?
+      webserver = node['kibana']['webserver']
+      kibana_user = node[webserver]['user']
+    else
+      kibana_user = 'nobody'
+    end
   else
-    kibana_user = "nobody"
+    kibana_user = node['kibana']['user']
   end
-else
-  kibana_user = node['kibana']['user']
-end
 
-directory node['kibana']['install_dir'] do
-  recursive true
-  owner kibana_user
-  mode "0755"
-end
+  directory node['kibana']['install_dir'] do
+    recursive true
+    owner kibana_user
+    mode '0755'
+  end
 
-case  node['kibana']['install_type']
-  when "git"
+  case node['kibana']['install_type']
+  when 'git'
     git "#{node['kibana']['install_dir']}/#{node['kibana']['git']['branch']}" do
       repository node['kibana']['git']['url']
       reference node['kibana']['git']['branch']
-      case  node['kibana']['git']['type']
-        when "checkout"
-          action :checkout
-        when "sync"
-          action :sync
-      end
+      action node['kibana']['git']['type'].to_sym
       user kibana_user
     end
     link "#{node['kibana']['install_dir']}/current" do
       to "#{node['kibana']['install_dir']}/#{node['kibana']['git']['branch']}"
     end
     node.set['kibana']['web_dir'] = "#{node['kibana']['install_dir']}/current/src"
-  when "file"
+  when 'file'
     case node['kibana']['file']['type']
-      when "zip"
-        include_recipe 'ark::default'
-        ark 'kibana' do
-          url node['kibana']['file']['url']
-          path node['kibana']['install_path']
-          checksum  node['kibana']['file']['checksum']
-          owner kibana_user
-          action :put
-        end
-        node.set['kibana']['web_dir'] = node['kibana']['install_dir']
+    when 'zip', 'tgz'
+      include_recipe 'ark::default'
+      ark 'kibana' do
+        url node['kibana']['file']['url']
+        path node['kibana']['install_path']
+        checksum  node['kibana']['file']['checksum']
+        owner kibana_user
+        action :put
+      end
+      node.set['kibana']['web_dir'] = node['kibana']['install_dir']
     end
-end
+  end
 
-template "#{node['kibana']['web_dir']}/config.js" do
-  source node['kibana']['config_template']
-  cookbook node['kibana']['config_cookbook']
-  mode "0750"
-  user kibana_user
-end
+  template "#{node['kibana']['web_dir']}/config.js" do
+    source node['kibana']['config_template']
+    cookbook node['kibana']['config_cookbook']
+    mode '0750'
+    user kibana_user
+  end
 
-link "#{node['kibana']['web_dir']}/app/dashboards/default.json" do
-  to "logstash.json"
-  only_if { !File::symlink?("#{node['kibana']['web_dir']}/app/dashboards/default.json") }
-end
+  link "#{node['kibana']['web_dir']}/app/dashboards/default.json" do
+    to 'logstash.json'
+    only_if { !File.symlink?("#{node['kibana']['web_dir']}/app/dashboards/default.json") }
+  end
 
-unless node['kibana']['webserver'].empty?
-  include_recipe "kibana::#{node['kibana']['webserver']}"
+  unless node['kibana']['webserver'].empty?
+    include_recipe "kibana::#{node['kibana']['webserver']}"
+  end
 end

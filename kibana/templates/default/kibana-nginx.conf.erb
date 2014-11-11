@@ -2,14 +2,18 @@ server {
   listen                <%= @listen_address %>:<%= @listen_port %>;
 
   server_name           <%= @server_name %> <%= @server_aliases.join(" ") %>;
-  access_log            /var/log/nginx/<%= @server_name %>.access.log;
+  access_log            <%= node['nginx']['log_dir'] %>/<%= @server_name %>.access.log;
 
   location / {
     root  <%= @kibana_dir %>;
     index  index.html  index.htm;
   }
 
-  location ~ ^/_aliases$ {
+location ~ ^/_aliases$ {
+    proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
+    proxy_read_timeout 90;
+  }
+  location ~ ^/.*/_aliases$ {
     proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
     proxy_read_timeout 90;
   }
@@ -25,10 +29,12 @@ server {
     proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
     proxy_read_timeout 90;
   }
-  location ~ ^/.*/_aliases$ {
+  location ~ ^/_cluster/health$ {
     proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
     proxy_read_timeout 90;
   }
+
+  # password protected end points
   location ~ ^/kibana-int/dashboard/.*$ {
     proxy_pass <%= @es_scheme %><%= @es_server %>:<%= @es_port %>;
     proxy_read_timeout 90;

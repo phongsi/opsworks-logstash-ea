@@ -7,7 +7,7 @@
 # All rights reserved - Do Not Redistribute
 #
 
-include_recipe "kibana::default"
+include_recipe "kibana::install"
 
 if node['opsworks-kibana']['web_auth_enabled']
   include_recipe 'htpasswd'
