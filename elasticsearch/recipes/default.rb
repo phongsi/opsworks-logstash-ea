@@ -10,6 +10,7 @@ include_recipe "ark"
 # Create user and group
 #
 group node.elasticsearch[:user] do
+  gid node.elasticsearch[:gid]
   action :create
   system true
 end
@@ -18,6 +19,7 @@ user node.elasticsearch[:user] do
   comment "ElasticSearch User"
   home    "#{node.elasticsearch[:dir]}/elasticsearch"
   shell   "/bin/bash"
+  uid     node.elasticsearch[:uid]
   gid     node.elasticsearch[:user]
   supports :manage_home => false
   action  :create
@@ -28,19 +30,24 @@ end
 bash "remove the elasticsearch user home" do
   user    'root'
   code    "rm -rf  #{node.elasticsearch[:dir]}/elasticsearch"
-
-  not_if  "test -L #{node.elasticsearch[:dir]}/elasticsearch"
-  only_if "test -d #{node.elasticsearch[:dir]}/elasticsearch"
+  not_if  { ::File.symlink?("#{node.elasticsearch[:dir]}/elasticsearch") }
+  only_if { ::File.directory?("#{node.elasticsearch[:dir]}/elasticsearch") }
 end
+
 
 # Create ES directories
 #
-[ node.elasticsearch[:path][:conf], node.elasticsearch[:path][:logs], node.elasticsearch[:pid_path] ].each do |path|
+[ node.elasticsearch[:path][:conf], node.elasticsearch[:path][:logs] ].each do |path|
   directory path do
     owner node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
     recursive true
     action :create
   end
+end
+
+directory node.elasticsearch[:pid_path] do
+  mode '0755'
+  recursive true
 end
 
 # Create data path directories
@@ -72,8 +79,12 @@ end
 ark_prefix_root = node.elasticsearch[:dir] || node.ark[:prefix_root]
 ark_prefix_home = node.elasticsearch[:dir] || node.ark[:prefix_home]
 
+filename = node.elasticsearch[:filename] || "elasticsearch-#{node.elasticsearch[:version]}.tar.gz"
+download_url = node.elasticsearch[:download_url] || [node.elasticsearch[:host],
+                node.elasticsearch[:repository], filename].join('/')
+
 ark "elasticsearch" do
-  url   node.elasticsearch[:download_url]
+  url   download_url
   owner node.elasticsearch[:user]
   group node.elasticsearch[:user]
   version node.elasticsearch[:version]
@@ -82,7 +93,7 @@ ark "elasticsearch" do
   prefix_root   ark_prefix_root
   prefix_home   ark_prefix_home
 
-  notifies :start,   'service[elasticsearch]'
+  notifies :start,   'service[elasticsearch]' unless node.elasticsearch[:skip_start]
   notifies :restart, 'service[elasticsearch]' unless node.elasticsearch[:skip_restart]
 
   not_if do
@@ -119,8 +130,8 @@ end
 #
 template "elasticsearch-env.sh" do
   path   "#{node.elasticsearch[:path][:conf]}/elasticsearch-env.sh"
-  source "elasticsearch-env.sh.erb"
-  owner node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
+  source node.elasticsearch[:templates][:elasticsearch_env]
+  owner  node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
 
   notifies :restart, 'service[elasticsearch]' unless node.elasticsearch[:skip_restart]
 end
@@ -129,8 +140,8 @@ end
 #
 template "elasticsearch.yml" do
   path   "#{node.elasticsearch[:path][:conf]}/elasticsearch.yml"
-  source "elasticsearch.yml.erb"
-  owner node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
+  source node.elasticsearch[:templates][:elasticsearch_yml]
+  owner  node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
 
   notifies :restart, 'service[elasticsearch]' unless node.elasticsearch[:skip_restart]
 end
@@ -139,8 +150,8 @@ end
 #
 template "logging.yml" do
   path   "#{node.elasticsearch[:path][:conf]}/logging.yml"
-  source "logging.yml.erb"
-  owner node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
+  source node.elasticsearch[:templates][:logging_yml]
+  owner  node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
 
   notifies :restart, 'service[elasticsearch]' unless node.elasticsearch[:skip_restart]
 end

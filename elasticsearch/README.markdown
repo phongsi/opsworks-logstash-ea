@@ -21,7 +21,7 @@ If you include the `elasticsearch::aws` recipe, the
 allowing you to use the _Amazon_ AWS-related features (node auto-discovery, etc).
 Set your AWS credentials either in the "elasticsearch/aws" data bag, or directly in the role/node configuration.
 Instead of using AWS access tokens, you can create the instance with a
-[IAM role](http://aws.amazon.com/iam/faqs/#How_do_i_get_started_with_IAM_roles_for_EC2_instances).
+[IAM role](http://docs.aws.amazon.com/IAM/latest/UserGuide/role-usecase-ec2app.html).
 
 If you include the `elasticsearch::data` and `elasticsearch::ebs` recipes, an EBS volume will be automatically
 created, formatted and mounted so you can use it as a local gateway for _Elasticsearch_.
@@ -118,7 +118,7 @@ This cookbook comes with a Rake task which allows to create, bootstrap and confi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~bash
 time \
  AWS_SSH_KEY_ID=your-key-id \
- AWS_ACCESS_KEY=your-access-keys \
+ AWS_ACCESS_KEY_ID=your-access-keys \
  AWS_SECRET_ACCESS_KEY=your-secret-key\
  SSH_KEY=/path/to/your/key.pem \
  NAME=elasticsearch-test-chef-solo-with-rake \
@@ -261,6 +261,15 @@ END
 ssh ... "sudo chef-solo -N elasticsearch-wrapper-cookbook-test -j node.json"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+For customizing the default attributes, there's a `elasticsearch::customize` recipe,
+which solves -- for the time being -- problems when over-riding the attributes.
+
+Create a `elasticsearch/attributes/customize.rb` file in your wrapper cookbook,
+and place any attribute overrides there:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~bash
+echo "normal[:elasticsearch][:version] = '1.1.0'" > my-elasticsearch/attributes/customize.rb
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Nginx Proxy
 -----------
