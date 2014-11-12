@@ -7,8 +7,6 @@
 # All rights reserved - Do Not Redistribute
 #
 
-include_recipe "kibana::install"
-
 if node['opsworks-kibana']['web_auth_enabled']
   include_recipe 'htpasswd'
   include_recipe 'nginx'
@@ -19,3 +17,5 @@ if node['opsworks-kibana']['web_auth_enabled']
     notifies :reload, "service[nginx]"
   end
 end
+
+include_recipe "kibana::install"
