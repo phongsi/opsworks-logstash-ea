@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: nginx
-# Recipe:: default
+# Recipe:: common/script
 #
 # Author:: AJ Christensen <aj@junglist.gen.nz>
 #
@@ -19,13 +19,11 @@
 # limitations under the License.
 #
 
-include_recipe "nginx::#{node['nginx']['install_method']}"
-
-service 'nginx' do
-  supports :status => true, :restart => true, :reload => true
-  action   :start
-end
-
-node['nginx']['default']['modules'].each do |ngx_module|
-  include_recipe "nginx::#{ngx_module}"
+%w(nxensite nxdissite).each do |nxscript|
+  template "#{node['nginx']['script_dir']}/#{nxscript}" do
+    source "#{nxscript}.erb"
+    mode   '0755'
+    owner  'root'
+    group  node['root_group']
+  end
 end
