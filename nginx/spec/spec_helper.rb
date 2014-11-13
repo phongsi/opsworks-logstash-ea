@@ -1,7 +1,10 @@
-require 'berkshelf'
+# encoding: utf-8
 require 'chefspec'
-require_relative 'support/matchers/nginx_site'
+require 'chefspec/berkshelf'
 
-Berkshelf.ui.mute do
-  Berkshelf::Berksfile.from_file('Berksfile').install(path: 'vendor/cookbooks')
+RSpec.configure do |config|
+  # prevent any WARN messages during testing
+  config.log_level = :error
 end
+
+ChefSpec::Coverage.start!
