@@ -1,9 +1,9 @@
 #
-# Author:: Sean OMeara (<someara@getchef.com>)
-# Author:: Joshua Timberman (<joshua@getchef.com>)
-# Recipe:: yum::default
+# Cookbook Name:: yum
+# Provider:: repository
 #
-# Copyright 2013-2014, Chef Software, Inc (<legal@getchef.com>)
+# Author:: Sean OMeara <someara@getchef.com>
+# Copyright 2013, Chef
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-yum_globalconfig '/etc/yum.conf' do
-  node['yum']['main'].each do |config, value|
-    send(config.to_sym, value)
+# Allow for Chef 10 support
+use_inline_resources if defined?(use_inline_resources)
+
+action :create  do
+  template new_resource.path do
+    source 'main.erb'
+    cookbook 'yum'
+    mode '0644'
+    variables(:config => new_resource)
   end
+end
 
-  action :create
+action :delete do
+  file new_resource.path do
+    action :delete
+  end
 end
