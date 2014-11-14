@@ -1,6 +1,45 @@
-erland Cookbook CHANGELOG
+erlang Cookbook CHANGELOG
 =========================
 This file is used to list changes made in each version of the erlang cookbook.
+
+v1.5.6 (2014-07-29)
+-------------------
+#16 - Allow for systems with that do not have lsb installed
+
+v1.5.4 (2014-04-30)
+-------------------
+- [COOK-4610] - New APT repository for ESL
+
+
+v1.5.2 (2014-03-18)
+-------------------
+- [COOK-4296] Add an attribute for passing CFLAGS prior to compilation
+
+
+v1.5.0 (2014-02-25)
+-------------------
+[COOK-4296] - Add custom build flags when building from source
+
+
+v1.4.2
+------
+COOK-4155, use a version in version conditional
+
+v1.4.0
+------
+Porting to use cookbook yum ~> 3.0
+Moving tests from minitest to bats
+Fixing style against rubocop
+
+
+v1.3.6
+------
+fixing metadata version error. locking to 3.0
+
+
+v1.3.4
+------
+Locking yum dependency to '< 3'
 
 
 v1.3.2
