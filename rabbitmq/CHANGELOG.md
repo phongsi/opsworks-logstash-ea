@@ -2,6 +2,56 @@ rabbitmq Cookbook CHANGELOG
 ===========================
 This file is used to list changes made in each version of the rabbitmq cookbook.
 
+v3.3.0 (2014-08-28)
+-------------------
+- Bump default rabbitmq-server version to 3.3.5
+- [COOK-4641] - remove setsid calls in service resource
+- Testing updates
+- Minor documentation fix re: rabbitmq_policy usage
+
+v3.2.2 (2014-05-07)
+-------------------
+- [COOK-2676] - Fixing startup issue when cluster mode is enabled
+
+
+v3.2.0 (2014-04-23)
+-------------------
+- [COOK-4517] - Add cluster partition handling attribute to the cookbook
+
+
+v3.1.0 (2014-03-27)
+-------------------
+- [COOK-4459] - added missing dependency package logrotate
+- [COOK-4279] - Addition of ssl_opts in rabbitmq.config when web_console_ssl is enabled
+
+
+v3.0.4 (2014-03-19)
+-------------------
+- [COOK-4431] - RPM / DEB package installs now use the rabbit version you specify
+- [COOK-4438] - rabbitmq_policy resource breaks if you use rabbitmq version >= 3.2
+
+
+v3.0.2 (2014-02-27)
+-------------------
+- [COOK-4384] Add ChefSpec Custom Matchers for LWRPs
+
+
+v3.0.0 (2014-02-27)
+-------------------
+[COOK-4369] - use_inline_resources
+
+
+v2.4.2 (2014-02-27)
+-------------------
+[COOK-4280] Upstart script properly waits until the server is started
+
+
+v2.4.0 (2014-02-14)
+-------------------
+- [COOK-4050] - Do not force failure in rabbitmq_user
+- [COOK-4088] - Update rabbitmq.config for port ranges
+- Updating test harness. Fixing style cops
+
 
 v2.3.2
 ------

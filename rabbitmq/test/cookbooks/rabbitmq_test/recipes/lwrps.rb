@@ -17,22 +17,36 @@
 # limitations under the License.
 #
 
-chef_gem "bunny"
+chef_gem 'bunny'
 
-include_recipe "rabbitmq::default"
+include_recipe 'rabbitmq::default'
 
 # force the rabbitmq restart now, then start testing
-execute "sleep 10" do
+execute 'sleep 10' do
   notifies :restart, "service[#{node['rabbitmq']['service_name']}]", :immediately
 end
 
-include_recipe "rabbitmq::plugin_management"
-include_recipe "rabbitmq::virtualhost_management"
-include_recipe "rabbitmq::policy_management"
-include_recipe "rabbitmq::user_management"
+include_recipe 'rabbitmq::plugin_management'
+include_recipe 'rabbitmq::virtualhost_management'
+include_recipe 'rabbitmq::policy_management'
+include_recipe 'rabbitmq::user_management'
 
 # can't verify it actually goes through without logging in, but at least exercise the code
 rabbitmq_user 'kitchen3' do
   password 'foobar'
   action :change_password
+end
+
+# download the rabbitmqadmin util from management plugin
+# this tests an immediate notifies statement
+# see https://github.com/kennonkwok/rabbitmq/issues/141
+rabbitmq_plugin "rabbitmq_management" do
+  action :enable
+  notifies :restart, "service[#{node['rabbitmq']['service_name']}]", :immediately # must restart before we can download
+end
+
+remote_file "/usr/local/bin/rabbitmqadmin" do
+  source "http://localhost:15672/cli/rabbitmqadmin"
+  mode "0755"
+  action :create
 end
